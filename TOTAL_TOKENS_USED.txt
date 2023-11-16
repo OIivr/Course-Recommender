@@ -1,0 +1,11 @@
+Total_tokens_used=1157
+
+
+MITTE LARISTADA!
+
+gpt-35-turbo:
+Input: $0.0010 / 1K tokens
+Output: $0.0020 / 1K tokens
+
+text-embedding-ada-002:
+$0.0001 / 1K tokens

@@ -1,26 +1,40 @@
 import requests
 import json
 
-""""
+# Initial API test
 
-url = "http://ois2.ut.ee/api/trainings?start=1&take=100000"
-headers = {
-    "Content-Type": "application/json",
-}
 
-response = requests.get(url, headers=headers)
+def get_all_courses():
+    all_courses = []
+    base_url = "http://ois2.ut.ee/api/courses"
+    take = 300
 
-if response.status_code == 200:
-    data = response.json()
-    print(response)
-else:
-    print(f"Error: {response.status_code}, {response.text}")
+    for start in range(1, 4000, take):
+        response = requests.get(f"{base_url}?start={start}&take={take}")
+        if response.status_code == 200:
+            data = response.json()
+        else:
+            print(f"Error: {response.status_code}, {response.text}")
 
-"""
+        all_courses.append(data)
+
+    return all_courses
+
+
+all_courses = get_all_courses()
+with open('courses.json', 'w') as output_file:
+    json.dump(all_courses, output_file, indent=2)
+
+
+# Get how many courses there are in the file
+with open('courses.json') as f:
+    data = json.load(f)
+
+num_courses = len(data)
+print(f'There are {num_courses} courses in the file.')
+
 
 # Extract course codes from the courses.json file
-
-
 def extract_course_codes():
     # Load JSON data from file
     with open('courses.json', 'r') as json_file:

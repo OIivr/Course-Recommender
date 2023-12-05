@@ -12,8 +12,8 @@ Welcome to Course-Recommender, a project developed as part of the Introduction t
 
 ## Datasets
 
-- **Dataset 1 (size):** [Specify details about the first dataset here]
-- **Dataset 2 (size):** [Specify details about the second dataset here]
+- **[Courses.json](data/Courses_FULL.json) (18,3MB):** This dataset contains information on all courses available in University of Tartu, including details on the study program to which each course is listed and the prerequisite courses.
+- **[Embeddings.json](data/embeddings.json):** Dataset with text-embeddings for all courses
 
 ## Team
 

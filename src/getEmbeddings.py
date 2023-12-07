@@ -1,8 +1,19 @@
+""" 
+
+Function to get embeddings from OpenAI API and verify the data
+Every object in the json file should have an embedding
+Every token used has been logged in the TOTAL_TOKENS_USED.txt file
+
+
+"""
+
 import openai
 import os
 from dotenv import load_dotenv
 import json
 import time
+
+import tiktoken
 load_dotenv()
 
 openai.api_type = "azure"
@@ -10,10 +21,10 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_base = "https://tu-openai-api-management.azure-api.net/OLTATKULL"
 openai.api_version = "2023-07-01-preview"
 
-# Function to get embeddings
 
+# Function to get embeddings from OpenAI API and log the tokens used
 
-def get_embeddings(query):
+def get_embedding(query):
     try:
         assert isinstance(query, str), "`query` should be a string"
         response = openai.Embedding.create(
@@ -22,7 +33,7 @@ def get_embeddings(query):
             input=query
         )
         embedding = response.data[0].embedding
-        # ------------------LOGS THE TOKENS-------------------- #
+        # --------LOGS THE TOKENS--------- #
         with open("TOTAL_TOKENS_USED.txt", 'r') as f:
             lines = f.readlines()
 
@@ -38,40 +49,62 @@ def get_embeddings(query):
                 break
         with open("TOTAL_TOKENS_USED.txt", 'w') as f:
             f.writelines(lines)
-        # ------------------------------------------------------ #
+        # --------------------------------- #
         return embedding, tokens
     except Exception as e:
         print("An error occurred:", e)
         return None
 
 
-token_counter = 0
+# Fetch embeddings for all courses in the json file
 
-query_counter = 0
+def fetch_embeddings(file):
+    total_tokens = 0
+    try:
+        with open(file, 'r') as f:
+            data = json.load(f)
 
-try:
-    new_data = []
-    with open("data/dataForEmbeddings.json", 'r') as f:
+        for obj in data:
+            if "embedding" in obj:
+                continue
+            elif total_tokens <= 145000:
+                input_str = json.dumps(obj)
+                response = get_embedding(input_str)
+
+                obj["data"] = input_str
+                obj["tokens"] = response[1]
+                obj["embedding"] = response[0]
+                with open(file, 'w') as f:
+                    json.dump(data, f, indent=4)
+                total_tokens += response[1]
+                print(f'{obj["title"]} Done!')
+            else:
+                print("Reached the limit of tokens, waiting 60 seconds...")
+                time.sleep(61)
+                total_tokens = 0
+    except Exception as e:
+        with open("data/data_justincase.json", 'w') as f:
+            json.dump(data, f, indent=4)
+        print(f'An error occurred with {obj["title"]}:', e)
+
+
+def count_embeddings():
+    with open('data/testikas.json', 'r') as f:
         data = json.load(f)
 
+    num_with_embeddings = 0
+    num_without_embeddings = 0
+
     for obj in data:
-        query_counter += 1
-        if query_counter >= 150:
-            time.sleep(61)
-            query_counter = 0
-        if "embeddings" in obj:
-            continue
+        if "embedding" in obj:
+            num_with_embeddings += 1
         else:
-            input_str = json.dumps(obj)
-            response = get_embeddings(input_str)
-            new_obj = {
-                "data": input_str,
-                "embedding_tokens_used": response[1],
-                "embeddings": response[0]
-            }
-            new_data.append(new_obj)
-            print(f'{obj["title"]} Done!')
-    with open('data/embeddings.json', 'w') as f:
-        json.dump(new_data, f, indent=4)
-except Exception as e:
-    print(f'An error occurred with {obj["title"]}:', e)
+            num_without_embeddings += 1
+
+    print(
+        f"The number of objects with embeddings is {num_with_embeddings}.")
+    print(
+        f"The number of objects without embeddings is {num_without_embeddings}.")
+
+
+count_embeddings()

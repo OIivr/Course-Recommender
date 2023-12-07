@@ -1,17 +1,12 @@
+""" 
+* Functions and methods to synthesize data for the embeddings
+* Remove unneeded information from the data and keep only the relevant information
+* Restructure the data
+* Count the number of tokens in the data
+
+"""
+
 import json
-
-
-def remove_actions():
-    with open('data/Courses_FULL.json') as f:
-        data = json.load(f)
-
-    # Remove the "_actions" key from each object
-    for obj in data:
-        if '_actions' in obj:
-            del obj['_actions']
-
-    with open('data/Courses_FULL.json', 'w') as f:
-        json.dump(data, f, indent=4)
 
 
 def remove_key(item, word):
@@ -150,3 +145,48 @@ def add_curricula_to_courses():
     with open('data/Courses_FULL2.json', 'w') as f:
         json.dump(courses_data, f, indent=4)
 
+
+# function to remove the key from all objects in the json file
+def remove(key):
+    with open('data/dataForEmbeddings.json', 'r') as f:
+        data = json.load(f)
+
+    for obj in data:
+        remove_key(obj, key)
+
+    with open('data/dataForEmbeddings.json', 'w') as f:
+        json.dump(data, f, indent=4)
+
+
+# function to remove the key but keep the siblings of the key
+def remove_key_keep_contents(link):
+    with open(link, 'r') as f:
+        data = json.load(f)
+
+    for obj in data:
+        if "target" in obj:
+            obj.update(obj["target"])
+            del obj["target"]
+
+    with open(link, 'w') as f:
+        json.dump(data, f, indent=4)
+
+
+# remove_key_keep_contents()
+
+
+# function to count the number of tokens in the json file
+def count_tokens(link):
+    with open(link, 'r') as f:
+        data = json.load(f)
+
+    total_tokens = 0
+
+    for obj in data:
+        json_str = str(obj)
+        encoding = tiktoken.get_encoding("cl100k_base")
+        token_integers = encoding.encode(json_str)
+        num_tokens = len(token_integers)
+        total_tokens += num_tokens
+
+    print(f"The total number of tokens is {total_tokens}.")

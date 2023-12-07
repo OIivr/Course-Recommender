@@ -1,5 +1,5 @@
-gpt_tokens_used=1292
-embeddings_tokens_used=509731
+gpt_tokens_used=1392
+embeddings_tokens_used=1957134
 
 
 MITTE LARISTADA!

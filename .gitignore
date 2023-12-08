@@ -1,2 +1,3 @@
 .env
 src/__pycache__
+TOTAL_TOKENS_USED.txt

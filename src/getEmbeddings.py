@@ -83,13 +83,11 @@ def fetch_embeddings(file):
                 time.sleep(61)
                 total_tokens = 0
     except Exception as e:
-        with open("data/data_justincase.json", 'w') as f:
-            json.dump(data, f, indent=4)
         print(f'An error occurred with {obj["title"]}:', e)
 
 
-def count_embeddings():
-    with open('data/testikas.json', 'r') as f:
+def count_embeddings(file):
+    with open(file, 'r') as f:
         data = json.load(f)
 
     num_with_embeddings = 0
@@ -107,4 +105,4 @@ def count_embeddings():
         f"The number of objects without embeddings is {num_without_embeddings}.")
 
 
-count_embeddings()
+# count_embeddings("data/embeddings.json")

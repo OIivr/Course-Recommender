@@ -13,7 +13,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_base = "https://tu-openai-api-management.azure-api.net/OLTATKULL"
 openai.api_version = "2023-07-01-preview"
 
-demo_queries = open("data/gpt_system_content.txt", "r").read()
+demo_queries = open("data/gpt_system_content.txt", "r", encoding="utf-8").read()
 
 
 def process_query(query, data):

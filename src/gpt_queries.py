@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from getEmbeddings import get_embedding
 import numpy as np
+import tkinter as tk
 from openai.embeddings_utils import cosine_similarity
 load_dotenv()
 
@@ -88,6 +89,35 @@ def cosine_similarity(embedding1, embedding2):
     return similarity
 
 
+def ask(event):
+    query = question.get("1.0", "end-1c")  # Get text from the Text widget
+    question.delete("1.0", "end")
+    top_k = get_k_recommendations(query)
+    answer = process_query(query, top_k, discussion)
+    if (answer != None):
+        discussion.append({"role": "user", "content": query})
+        discussion.append({"role": "assistant", "content": answer})
+    if len(discussion) > 10:
+        discussion.pop(0)
+        discussion.pop(0)
+    bot_text.set(answer)
+
+root = tk.Tk()
+
+bot_text = tk.StringVar()
+bot_text.set("Hello! How may I help you?")
+chat = tk.Label(root, textvariable=bot_text)
+chat.pack()
+question = tk.Text()
+question.pack()
+quit_button = tk.Button(text="Quit")
+quit_button.pack()
+
+quit_button.bind('<Button-1>', quit)
+question.bind("<Return>", ask)
+
+root.mainloop()
+
 i = 0
 print("------------COURSE RECOMMENDER----------------")
 print("")
@@ -109,6 +139,7 @@ while query != "exit":
     print(f"Answer: ")
     print("")
     print(answer)
+    bot_text.set(answer)
     print("")
     time.sleep(1)
     print(f"[{i}] -----------------------------------------")

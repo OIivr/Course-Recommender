@@ -14,18 +14,22 @@ openai.api_base = "https://tu-openai-api-management.azure-api.net/OLTATKULL"
 openai.api_version = "2023-07-01-preview"
 
 demo_queries = open("data/gpt_system_content.txt", "r", encoding="utf-8").read()
+discussion = []
 
-
-def process_query(query, data):
+def process_query(query, data, history):
     assert isinstance(query, str), "`query` should be a string"
     system_content_message = demo_queries + data
+    past = []
+    for line in history:
+        past.append(line)
+    past.append({"role": "system", "content": system_content_message})
+    past.append({"role": "user", "content": query})
     try:
         response = openai.ChatCompletion.create(
             deployment_id="IDS2023_PIKANI_GPT35",
             model="gpt-3.5-turbo",
             temperature=0.0,  # Setting the temperature
-            messages=[{"role": "system", "content": system_content_message},
-                      {"role": "user", "content": query}]
+            messages=past
         )
         status_code = response["choices"][0]["finish_reason"]
         assert status_code == "stop", f"The status code was {status_code}."
@@ -38,6 +42,7 @@ def process_query(query, data):
                 total_tokens_used = int(line.split('=')[1])
                 break
         tokens = response['usage']['total_tokens']
+        print(tokens)
         total_tokens_used += tokens
         for i, line in enumerate(lines):
             if line.startswith('gpt_tokens_used='):
@@ -93,7 +98,13 @@ while query != "exit":
     i += 1
     print("")
     top_k = get_k_recommendations(query)
-    answer = process_query(query, top_k)
+    answer = process_query(query, top_k, discussion)
+    if (answer != None):
+        discussion.append({"role": "user", "content": query})
+        discussion.append({"role": "assistant", "content": answer})
+    if len(discussion) > 10:
+        discussion.pop(0)
+        discussion.pop(0)
     print("")
     print(f"Answer: ")
     print("")

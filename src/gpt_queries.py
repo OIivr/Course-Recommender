@@ -119,7 +119,7 @@ bot_text.set("Welcome!")
 chat = tk.Label(root, textvariable=bot_text, wraplength=480)
 chat.pack()
 style = ttk.Style()
-style.configure("TEntry", foreground="white", fieldbackground="white", bordercolor="black",
+style.configure("TEntry", foreground="black", fieldbackground="white", bordercolor="black",
                 lightcolor="black", darkcolor="black", borderwidth=20, relief="groove")
 
 frame = tk.Frame(root)

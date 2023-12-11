@@ -1,5 +1,6 @@
 import json
 import time
+from tkinter import ttk
 import openai
 import os
 from dotenv import load_dotenv
@@ -14,12 +15,18 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 openai.api_base = "https://tu-openai-api-management.azure-api.net/OLTATKULL"
 openai.api_version = "2023-07-01-preview"
 
-demo_queries = open("data/gpt_system_content.txt", "r", encoding="utf-8").read()
+# --------FILE PATHS--------- #
+instruction_file = "data/instructions.txt"
+log_file = "TOTAL_TOKENS_USED.txt"
+embeddings_file = "data/embeddings.json"
+
 discussion = []
+instructions = open(instruction_file, "r", encoding="utf-8").read()
+
 
 def process_query(query, data, history):
     assert isinstance(query, str), "`query` should be a string"
-    system_content_message = demo_queries + data
+    system_content_message = instructions + data
     past = []
     for line in history:
         past.append(line)
@@ -35,7 +42,7 @@ def process_query(query, data, history):
         status_code = response["choices"][0]["finish_reason"]
         assert status_code == "stop", f"The status code was {status_code}."
         # --------LOGS THE TOKENS--------- #
-        with open("TOTAL_TOKENS_USED.txt", 'r') as f:
+        with open(log_file, 'r') as f:
             lines = f.readlines()
 
         for line in lines:
@@ -49,7 +56,7 @@ def process_query(query, data, history):
             if line.startswith('gpt_tokens_used='):
                 lines[i] = f'gpt_tokens_used={total_tokens_used}\n'
                 break
-        with open("TOTAL_TOKENS_USED.txt", 'w') as f:
+        with open(log_file, 'w') as f:
             f.writelines(lines)
         # --------------------------------- #
         return response["choices"][0]["message"]["content"]
@@ -57,8 +64,8 @@ def process_query(query, data, history):
         print("An error occurred:", e)
 
 
-def get_k_recommendations(query, k=5):
-    with open("data/embeddings.json", 'r') as f:
+def get_k_recommendations(query, k=3):
+    with open(embeddings_file, 'r') as f:
         data = json.load(f)
     assert isinstance(query, str), "`query` should be a string"
     assert isinstance(k, int), "`k` should be an integer"
@@ -90,8 +97,8 @@ def cosine_similarity(embedding1, embedding2):
 
 
 def ask(event):
-    query = question.get("1.0", "end-1c")  # Get text from the Text widget
-    question.delete("1.0", "end")
+    query = question.get()
+    question.delete(0, "end")
     top_k = get_k_recommendations(query)
     answer = process_query(query, top_k, discussion)
     if (answer != None):
@@ -102,47 +109,57 @@ def ask(event):
         discussion.pop(0)
     bot_text.set(answer)
 
+
 root = tk.Tk()
+root.title("Course Recommender")
+root.geometry("500x600")
 
 bot_text = tk.StringVar()
-bot_text.set("Hello! How may I help you?")
-chat = tk.Label(root, textvariable=bot_text)
+bot_text.set("Welcome!")
+chat = tk.Label(root, textvariable=bot_text, wraplength=480)
 chat.pack()
-question = tk.Text()
-question.pack()
-quit_button = tk.Button(text="Quit")
-quit_button.pack()
+style = ttk.Style()
+style.configure("TEntry", foreground="white", fieldbackground="white", bordercolor="black",
+                lightcolor="black", darkcolor="black", borderwidth=20, relief="groove")
 
+frame = tk.Frame(root)
+frame.pack(side=tk.BOTTOM, pady=25)
+question = ttk.Entry(frame, style="TEntry", width=45)
+question.pack(side=tk.LEFT)
+quit_button = tk.Button(frame, text="Quit")
+quit_button.pack(side=tk.RIGHT)
 quit_button.bind('<Button-1>', quit)
 question.bind("<Return>", ask)
 
 root.mainloop()
 
-i = 0
-print("------------COURSE RECOMMENDER----------------")
-print("")
-print("Hello! How may I help you?")
-print("")
-query = input("Question: ")
-while query != "exit":
-    i += 1
+
+def main_CLI():
+    i = 0
+    print("------------COURSE RECOMMENDER----------------")
     print("")
-    top_k = get_k_recommendations(query)
-    answer = process_query(query, top_k, discussion)
-    if (answer != None):
-        discussion.append({"role": "user", "content": query})
-        discussion.append({"role": "assistant", "content": answer})
-    if len(discussion) > 10:
-        discussion.pop(0)
-        discussion.pop(0)
-    print("")
-    print(f"Answer: ")
-    print("")
-    print(answer)
-    bot_text.set(answer)
-    print("")
-    time.sleep(1)
-    print(f"[{i}] -----------------------------------------")
+    print("Hello! How may I help you?")
     print("")
     query = input("Question: ")
-print("Bye!")
+    while query != "exit":
+        i += 1
+        print("")
+        top_k = get_k_recommendations(query)
+        answer = process_query(query, top_k, discussion)
+        if (answer != None):
+            discussion.append({"role": "user", "content": query})
+            discussion.append({"role": "assistant", "content": answer})
+        if len(discussion) > 10:
+            discussion.pop(0)
+            discussion.pop(0)
+        print("")
+        print(f"Answer: ")
+        print("")
+        print(answer)
+        bot_text.set(answer)
+        print("")
+        time.sleep(1)
+        print(f"[{i}] -----------------------------------------")
+        print("")
+        query = input("Question: ")
+    print("Bye!")

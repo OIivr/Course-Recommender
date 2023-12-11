@@ -24,6 +24,9 @@ openai.api_version = "2023-07-01-preview"
 
 # Function to get embeddings from OpenAI API and log the tokens used
 
+log_file = "TOTAL_TOKENS_USED.txt"
+
+
 def get_embedding(query):
     try:
         assert isinstance(query, str), "`query` should be a string"
@@ -34,7 +37,7 @@ def get_embedding(query):
         )
         embedding = response.data[0].embedding
         # --------LOGS THE TOKENS--------- #
-        with open("TOTAL_TOKENS_USED.txt", 'r') as f:
+        with open(log_file, 'r') as f:
             lines = f.readlines()
 
         for line in lines:
@@ -47,7 +50,7 @@ def get_embedding(query):
             if line.startswith('embeddings_tokens_used='):
                 lines[i] = f'embeddings_tokens_used={total_tokens_used}\n'
                 break
-        with open("TOTAL_TOKENS_USED.txt", 'w') as f:
+        with open(log_file, 'w') as f:
             f.writelines(lines)
         # --------------------------------- #
         return embedding, tokens
@@ -105,4 +108,5 @@ def count_embeddings(file):
         f"The number of objects without embeddings is {num_without_embeddings}.")
 
 
+fetch_embeddings("data/embeddings.json")
 # count_embeddings("data/embeddings.json")

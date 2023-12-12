@@ -42,7 +42,7 @@ def process_query(query, data, history):
         status_code = response["choices"][0]["finish_reason"]
         assert status_code == "stop", f"The status code was {status_code}."
         # --------LOGS THE TOKENS--------- #
-        with open(log_file, 'r') as f:
+        with open(log_file, 'r', encoding="UTF-8") as f:
             lines = f.readlines()
 
         for line in lines:
@@ -56,7 +56,7 @@ def process_query(query, data, history):
             if line.startswith('gpt_tokens_used='):
                 lines[i] = f'gpt_tokens_used={total_tokens_used}\n'
                 break
-        with open(log_file, 'w') as f:
+        with open(log_file, 'w', encoding="UTF-8") as f:
             f.writelines(lines)
         # --------------------------------- #
         return response["choices"][0]["message"]["content"]
@@ -64,7 +64,7 @@ def process_query(query, data, history):
         print("An error occurred:", e)
 
 
-def get_k_recommendations(query, k=3):
+def get_k_recommendations(query, k=4):
     with open(embeddings_file, 'r') as f:
         data = json.load(f)
     assert isinstance(query, str), "`query` should be a string"
@@ -156,7 +156,6 @@ def main_CLI():
         print(f"Answer: ")
         print("")
         print(answer)
-        bot_text.set(answer)
         print("")
         time.sleep(1)
         print(f"[{i}] -----------------------------------------")

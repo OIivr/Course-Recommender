@@ -55,7 +55,7 @@ You will have to have your own OPEN AI's API key
 
    Please note that you might also need to change the `openai.api_type`, `openai.api_key`, `openai.api_base` and `openai.api_version` parameters in the `gpt_queries.py` file based on the API key you provide.
 
-## Usage
+### Usage
 
 To run the application, simply run the `gpt_queries.py` file and _Voila!_
 
